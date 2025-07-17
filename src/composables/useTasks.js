@@ -1,36 +1,79 @@
 import { ref, watch } from "vue";
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc,
+  query,
+  where,
+  onSnapshot,
+  getDocs,
+} from "firebase/firestore";
+import { db } from "../firebase/firebase";
 
 export function useTasks(currentUser, selectedSubject) {
   const tasks = ref([]);
   const showTaskModal = ref(false);
   const editingTask = ref(null);
+  const unsubscribeRef = ref(null);
 
-  const saveTask = (taskData) => {
+  const loadTasks = async () => {
+    if (!currentUser.value) return;
+
+    // Get all subject IDs of the current user
+    const subjectQuery = query(
+      collection(db, "subjects"),
+      where("userId", "==", currentUser.value.uid)
+    );
+    const subjectSnapshot = await getDocs(subjectQuery);
+    const validSubjectIds = subjectSnapshot.docs.map((doc) => doc.id);
+
+    // Query all tasks of the current user
+    const taskQuery = query(
+      collection(db, "tasks"),
+      where("userId", "==", currentUser.value.uid)
+    );
+
+    if (unsubscribeRef.value) unsubscribeRef.value(); // Unsubscribe old listener
+
+    unsubscribeRef.value = onSnapshot(taskQuery, (snapshot) => {
+      const result = [];
+
+      snapshot.forEach(async (docSnap) => {
+        const task = { id: docSnap.id, ...docSnap.data() };
+
+        // If the task's subject no longer exists, delete it
+        if (!validSubjectIds.includes(task.subjectId)) {
+          await deleteDoc(doc(db, "tasks", task.id));
+        } else {
+          // Otherwise keep it
+          result.push(task);
+        }
+      });
+
+      // Filtered valid tasks
+      tasks.value = result;
+    });
+  };
+
+  const saveTask = async (taskData) => {
+    if (!currentUser.value || !selectedSubject.value) return;
+
     if (editingTask.value) {
-      // Update existing task
-      const taskIndex = tasks.value.findIndex(
-        (t) => t.id === editingTask.value.id
-      );
-      if (taskIndex !== -1) {
-        tasks.value[taskIndex] = {
-          ...tasks.value[taskIndex],
-          ...taskData,
-        };
-      }
+      const taskRef = doc(db, "tasks", editingTask.value.id);
+      await updateDoc(taskRef, {
+        ...taskData,
+      });
     } else {
-      // Add new task
-      const newTask = {
-        id: Date.now().toString(),
+      await addDoc(collection(db, "tasks"), {
         ...taskData,
         status: "todo",
         subjectId: selectedSubject.value.id,
-        userId: currentUser.value.id,
-      };
-
-      tasks.value.push(newTask);
+        userId: currentUser.value.uid,
+      });
     }
 
-    saveUserData();
     closeTaskModal();
   };
 
@@ -39,9 +82,8 @@ export function useTasks(currentUser, selectedSubject) {
     showTaskModal.value = true;
   };
 
-  const deleteTask = (taskId) => {
-    tasks.value = tasks.value.filter((t) => t.id !== taskId);
-    saveUserData();
+  const deleteTask = async (taskId) => {
+    await deleteDoc(doc(db, "tasks", taskId));
   };
 
   const closeTaskModal = () => {
@@ -50,15 +92,11 @@ export function useTasks(currentUser, selectedSubject) {
   };
 
   const getTaskCount = (subjectId) => {
-    return tasks.value.filter((task) => task.subjectId === subjectId).length;
+    return tasks.value.filter((t) => t.subjectId === subjectId).length;
   };
 
   const getTasksByStatus = (status) => {
-    if (!selectedSubject.value) return [];
-    return tasks.value.filter(
-      (task) =>
-        task.subjectId === selectedSubject.value.id && task.status === status
-    );
+    return tasks.value.filter((t) => t.status === status);
   };
 
   const isTaskOverdue = (task) => {
@@ -76,37 +114,22 @@ export function useTasks(currentUser, selectedSubject) {
     });
   };
 
-  const saveUserData = () => {
-    if (!currentUser.value) return;
-
-    const userData = JSON.parse(
-      localStorage.getItem(`taskSchedulerData_${currentUser.value.id}`) || "{}"
-    );
-    userData.tasks = tasks.value;
-
-    localStorage.setItem(
-      `taskSchedulerData_${currentUser.value.id}`,
-      JSON.stringify(userData)
-    );
+  const moveTaskToStatus = async (taskId, newStatus) => {
+    const taskRef = doc(db, "tasks", taskId);
+    await updateDoc(taskRef, {
+      status: newStatus,
+    });
   };
 
-  const loadUserData = () => {
-    if (!currentUser.value) return;
-
-    const userData = JSON.parse(
-      localStorage.getItem(`taskSchedulerData_${currentUser.value.id}`) || "{}"
-    );
-    tasks.value = userData.tasks || [];
-  };
-
-  // Watch for user changes
+  // Watch for changes in user or selected subject
   watch(
-    currentUser,
-    (newUser) => {
-      if (newUser) {
-        loadUserData();
+    [currentUser, selectedSubject],
+    ([user, subject]) => {
+      if (user) {
+        loadTasks();
       } else {
         tasks.value = [];
+        if (unsubscribeRef.value) unsubscribeRef.value();
       }
     },
     { immediate: true }
@@ -125,5 +148,6 @@ export function useTasks(currentUser, selectedSubject) {
     isTaskOverdue,
     formatDate,
     formatTime,
+    moveTaskToStatus,
   };
 }

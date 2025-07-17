@@ -1,84 +1,99 @@
+// src/composables/auth.js
+
 "use client";
 
 import { ref } from "vue";
+import { auth, db } from "../firebase/firebase"; // ✅ make sure db is imported
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile,
+} from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore"; // ✅ Firestore methods for writing data
+
+const isAuthenticated = ref(false);
+const currentUser = ref(null);
+
+// Check auth state on composable load
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    isAuthenticated.value = true;
+    currentUser.value = {
+      uid: user.uid,
+      name: user.displayName || "",
+      email: user.email,
+    };
+  } else {
+    isAuthenticated.value = false;
+    currentUser.value = null;
+  }
+});
 
 export function useAuth() {
-  const isAuthenticated = ref(false);
-  const currentUser = ref(null);
-
   const handleLogin = async (credentials) => {
-    // Mock authentication with promise for async handling
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const users = JSON.parse(
-          localStorage.getItem("taskSchedulerUsers") || "[]"
-        );
-        const user = users.find(
-          (u) =>
-            u.email === credentials.email && u.password === credentials.password
-        );
+    try {
+      const userCred = await signInWithEmailAndPassword(
+        auth,
+        credentials.email,
+        credentials.password
+      );
 
-        if (user) {
-          currentUser.value = user;
-          isAuthenticated.value = true;
-          localStorage.setItem(
-            "taskSchedulerCurrentUser",
-            JSON.stringify(user)
-          );
-          resolve(user);
-        } else {
-          reject(new Error("Invalid email or password"));
-        }
-      }, 500); // Simulate network delay
-    });
+      const user = userCred.user;
+      currentUser.value = {
+        uid: user.uid,
+        name: user.displayName || "",
+        email: user.email,
+      };
+      isAuthenticated.value = true;
+      return user;
+    } catch (error) {
+      throw new Error(error.message);
+    }
   };
 
   const handleSignup = async (userData) => {
-    // Mock user registration with promise
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const users = JSON.parse(
-          localStorage.getItem("taskSchedulerUsers") || "[]"
-        );
+    try {
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        userData.email,
+        userData.password
+      );
 
-        if (users.find((u) => u.email === userData.email)) {
-          reject(new Error("An account with this email already exists"));
-          return;
-        }
+      // Set Firebase displayName
+      await updateProfile(userCred.user, {
+        displayName: userData.name,
+      });
 
-        const newUser = {
-          id: Date.now().toString(),
-          name: userData.name,
-          email: userData.email,
-          password: userData.password,
-        };
+      const user = userCred.user;
 
-        users.push(newUser);
-        localStorage.setItem("taskSchedulerUsers", JSON.stringify(users));
+      // Save to Firestore users collection
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        name: userData.name,
+        email: user.email,
+        createdAt: new Date(),
+      });
 
-        currentUser.value = newUser;
-        isAuthenticated.value = true;
-        localStorage.setItem(
-          "taskSchedulerCurrentUser",
-          JSON.stringify(newUser)
-        );
-        resolve(newUser);
-      }, 500); // Simulate network delay
-    });
+      currentUser.value = {
+        uid: user.uid,
+        name: userData.name,
+        email: user.email,
+      };
+      isAuthenticated.value = true;
+
+      return user;
+    } catch (error) {
+      throw new Error(error.message);
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await signOut(auth);
     currentUser.value = null;
     isAuthenticated.value = false;
-    localStorage.removeItem("taskSchedulerCurrentUser");
   };
-
-  // Check for saved authentication on load
-  const savedUser = localStorage.getItem("taskSchedulerCurrentUser");
-  if (savedUser) {
-    currentUser.value = JSON.parse(savedUser);
-    isAuthenticated.value = true;
-  }
 
   return {
     isAuthenticated,

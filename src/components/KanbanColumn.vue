@@ -1,9 +1,10 @@
 <template>
   <div
-    class="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-3xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-lg"
+    class="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-3xl p-6 border border-gray-200 dark:border-gray-700 shadow-xl transition-all duration-300 flex flex-col h-[600px]"
   >
+    <!-- Header -->
     <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center gap-3">
         <div
           :class="[
             'w-3 h-3 rounded-full',
@@ -14,9 +15,11 @@
               : 'bg-green-500',
           ]"
         ></div>
-        <h3 class="font-semibold text-lg">{{ column.title }}</h3>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+          {{ column.title }}
+        </h3>
         <span
-          class="bg-gray-100 dark:bg-gray-700 text-sm px-3 py-1 rounded-full font-medium"
+          class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm px-3 py-1 rounded-full font-medium"
         >
           {{ tasks.length }}
         </span>
@@ -24,8 +27,9 @@
       <component :is="column.icon" class="w-5 h-5 text-gray-400" />
     </div>
 
+    <!-- Task List Area -->
     <div
-      class="space-y-4 min-h-[300px]"
+      class="space-y-4 overflow-y-auto h-full pr-2"
       @drop="onDrop"
       @dragover.prevent
       @dragenter.prevent
@@ -45,11 +49,11 @@
       <!-- Empty State -->
       <div v-if="tasks.length === 0" class="text-center py-12">
         <div
-          class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-3"
+          class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm"
         >
           <component :is="column.icon" class="w-6 h-6 text-gray-400" />
         </div>
-        <p class="text-sm text-gray-500 dark:text-gray-400">
+        <p class="text-sm text-gray-500 dark:text-gray-400 italic">
           No {{ column.title.toLowerCase() }} tasks
         </p>
       </div>

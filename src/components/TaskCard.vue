@@ -51,17 +51,43 @@
 
     <div v-if="isOverdue" class="mt-3 flex items-center space-x-2">
       <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-      <span class="text-xs text-red-600 dark:text-red-400 font-medium"
-        >Overdue</span
+      <span class="text-xs text-red-600 dark:text-red-400 font-medium">
+        Overdue
+      </span>
+    </div>
+
+    <!-- Move to Status Dropdown -->
+    <div class="relative mt-4">
+      <select
+        class="w-full text-sm p-2 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-white focus:outline-none appearance-none"
+        v-model="selectedStatus"
+        @change="changeStatus"
       >
+        <option disabled value="">Move to...</option>
+        <option v-if="task.status !== 'todo'" value="todo">To Do</option>
+        <option v-if="task.status !== 'inprogress'" value="inprogress">
+          In Progress
+        </option>
+        <option v-if="task.status !== 'completed'" value="completed">
+          Completed
+        </option>
+      </select>
+
+      <!-- Lucide ChevronDown icon, positioned slightly to the left -->
+      <ChevronDown
+        class="absolute pointer-events-none right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-300"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { Edit, Trash2, Calendar, Clock } from "lucide-vue-next";
+import { ref } from "vue";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
+import { Edit, Trash2, Calendar, Clock, ChevronDown } from "lucide-vue-next";
 
-defineProps({
+const props = defineProps({
   task: Object,
   isOverdue: Boolean,
   formatDate: Function,
@@ -69,4 +95,15 @@ defineProps({
 });
 
 defineEmits(["drag-start", "edit", "delete"]);
+
+const selectedStatus = ref("");
+
+// Method to update task status
+const changeStatus = async () => {
+  if (!selectedStatus.value || selectedStatus.value === props.task.status)
+    return;
+  const taskRef = doc(db, "tasks", props.task.id);
+  await updateDoc(taskRef, { status: selectedStatus.value });
+  selectedStatus.value = ""; // Reset after change
+};
 </script>

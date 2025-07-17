@@ -1,7 +1,7 @@
 {
   "name": "vue-task-scheduler",
   "version": "1.0.0",
-  "description": "A mobile-responsive Task Scheduler web app built with Vue.js",
+  "description": "A mobile-responsive StopCrammin' web app built with Vue.js",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
@@ -10,9 +10,11 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "firebase": "^11.10.0",
     "lucide-vue-next": "^0.294.0",
     "tailwindcss-animate": "^1.0.7",
-    "vue": "^3.4.0"
+    "vue": "^3.4.0",
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.5.0",

@@ -37,6 +37,7 @@
           @select-subject="selectSubject"
           @add-subject="showSubjectModal = true"
           @delete-subject="confirmDeleteSubject"
+          @select-dashboard="selectedSubject = null"
           :getTaskCount="getTaskCount"
         />
 
@@ -125,8 +126,8 @@ const { isDarkMode, toggleDarkMode } = useTheme();
 
 const {
   subjects,
-  selectedSubject,
   showSubjectModal,
+  selectedSubject,
   addSubject: addSubjectAction,
   selectSubject,
   deleteSubject: deleteSubjectAction,
@@ -177,10 +178,7 @@ const handleLogin = async (credentials) => {
     await authLogin(credentials);
     showSuccess("Welcome back!", "You have successfully logged in.");
   } catch (error) {
-    showError(
-      "Login Failed",
-      error.message || "Invalid credentials. Please try again."
-    );
+    showError("Login Failed", error.message || "Invalid credentials.");
   }
 };
 
@@ -189,7 +187,7 @@ const handleSignup = async (userData) => {
     await authSignup(userData);
     showSuccess(
       "Account Created!",
-      "Welcome to Task Scheduler. Start organizing your tasks!"
+      "Welcome to StopCrammin'. Start organizing your tasks!"
     );
   } catch (error) {
     showError(

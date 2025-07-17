@@ -1,8 +1,20 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+  <div
+    class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+  >
     <!-- Background Pattern -->
     <div class="absolute inset-0 opacity-5">
-      <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0); background-size: 20px 20px;"></div>
+      <div
+        class="absolute inset-0"
+        style="
+          background-image: radial-gradient(
+            circle at 1px 1px,
+            rgba(0, 0, 0, 0.15) 1px,
+            transparent 0
+          );
+          background-size: 20px 20px;
+        "
+      ></div>
     </div>
 
     <!-- Dark Mode Toggle -->
@@ -17,13 +29,19 @@
     <div class="max-w-md w-full space-y-8 relative z-10">
       <!-- Logo & Title -->
       <div class="text-center">
-        <div class="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+        <div
+          class="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg"
+        >
           <CheckSquare class="w-8 h-8 text-white" />
         </div>
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-2">
-          Task Scheduler
+        <h1
+          class="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-2"
+        >
+          StopCrammin'
         </h1>
-        <p class="text-gray-600 dark:text-gray-400">Organize your tasks with style</p>
+        <p class="text-gray-600 dark:text-gray-400">
+          Organize your tasks with style
+        </p>
       </div>
 
       <!-- Auth Buttons -->
@@ -45,9 +63,17 @@
 
     <!-- Login Modal -->
     <Teleport to="body">
-      <div v-if="showLoginModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="showLoginModal = false"></div>
-        <div class="relative bg-white dark:bg-gray-800 rounded-3xl p-8 w-full max-w-md shadow-2xl border border-gray-200 dark:border-gray-700 transform transition-all duration-300 scale-100">
+      <div
+        v-if="showLoginModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm"
+          @click="showLoginModal = false"
+        ></div>
+        <div
+          class="relative bg-white dark:bg-gray-800 rounded-3xl p-8 w-full max-w-md shadow-2xl border border-gray-200 dark:border-gray-700 transform transition-all duration-300 scale-100"
+        >
           <div class="flex items-center justify-between mb-6">
             <h3 class="text-2xl font-bold">Welcome Back</h3>
             <button
@@ -61,7 +87,10 @@
           <form @submit.prevent="login" class="space-y-6">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Email</label>
+                <label
+                  class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+                  >Email</label
+                >
                 <input
                   v-model="loginForm.email"
                   type="email"
@@ -71,7 +100,10 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Password</label>
+                <label
+                  class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+                  >Password</label
+                >
                 <input
                   v-model="loginForm.password"
                   type="password"
@@ -94,9 +126,17 @@
 
     <!-- Signup Modal -->
     <Teleport to="body">
-      <div v-if="showSignupModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="showSignupModal = false"></div>
-        <div class="relative bg-white dark:bg-gray-800 rounded-3xl p-8 w-full max-w-md shadow-2xl border border-gray-200 dark:border-gray-700 transform transition-all duration-300 scale-100">
+      <div
+        v-if="showSignupModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm"
+          @click="showSignupModal = false"
+        ></div>
+        <div
+          class="relative bg-white dark:bg-gray-800 rounded-3xl p-8 w-full max-w-md shadow-2xl border border-gray-200 dark:border-gray-700 transform transition-all duration-300 scale-100"
+        >
           <div class="flex items-center justify-between mb-6">
             <h3 class="text-2xl font-bold">Create Account</h3>
             <button
@@ -110,7 +150,10 @@
           <form @submit.prevent="signup" class="space-y-6">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Name</label>
+                <label
+                  class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+                  >Name</label
+                >
                 <input
                   v-model="signupForm.name"
                   type="text"
@@ -120,7 +163,10 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Email</label>
+                <label
+                  class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+                  >Email</label
+                >
                 <input
                   v-model="signupForm.email"
                   type="email"
@@ -130,7 +176,10 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Password</label>
+                <label
+                  class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+                  >Password</label
+                >
                 <input
                   v-model="signupForm.password"
                   type="password"
@@ -154,41 +203,41 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { X, Sun, Moon, CheckSquare } from 'lucide-vue-next'
+import { ref, reactive } from "vue";
+import { X, Sun, Moon, CheckSquare } from "lucide-vue-next";
 
 defineProps({
-  isDarkMode: Boolean
-})
+  isDarkMode: Boolean,
+});
 
-const emit = defineEmits(['login', 'signup', 'toggle-dark-mode'])
+const emit = defineEmits(["login", "signup", "toggle-dark-mode"]);
 
-const showLoginModal = ref(false)
-const showSignupModal = ref(false)
+const showLoginModal = ref(false);
+const showSignupModal = ref(false);
 
 const loginForm = reactive({
-  email: '',
-  password: ''
-})
+  email: "",
+  password: "",
+});
 
 const signupForm = reactive({
-  name: '',
-  email: '',
-  password: ''
-})
+  name: "",
+  email: "",
+  password: "",
+});
 
 const login = () => {
-  emit('login', { ...loginForm })
-  loginForm.email = ''
-  loginForm.password = ''
-  showLoginModal.value = false
-}
+  emit("login", { ...loginForm });
+  loginForm.email = "";
+  loginForm.password = "";
+  showLoginModal.value = false;
+};
 
 const signup = () => {
-  emit('signup', { ...signupForm })
-  signupForm.name = ''
-  signupForm.email = ''
-  signupForm.password = ''
-  showSignupModal.value = false
-}
+  emit("signup", { ...signupForm });
+  signupForm.name = "";
+  signupForm.email = "";
+  signupForm.password = "";
+  showSignupModal.value = false;
+};
 </script>
