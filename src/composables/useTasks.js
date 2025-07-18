@@ -17,6 +17,7 @@ export function useTasks(currentUser, selectedSubject) {
   const showTaskModal = ref(false);
   const editingTask = ref(null);
   const unsubscribeRef = ref(null);
+  const showTaskErrorModal = ref(false);
 
   const loadTasks = async () => {
     if (!currentUser.value) return;
@@ -60,21 +61,25 @@ export function useTasks(currentUser, selectedSubject) {
   const saveTask = async (taskData) => {
     if (!currentUser.value || !selectedSubject.value) return;
 
-    if (editingTask.value) {
-      const taskRef = doc(db, "tasks", editingTask.value.id);
-      await updateDoc(taskRef, {
-        ...taskData,
-      });
-    } else {
-      await addDoc(collection(db, "tasks"), {
-        ...taskData,
-        status: "todo",
-        subjectId: selectedSubject.value.id,
-        userId: currentUser.value.uid,
-      });
-    }
+    try {
+      if (editingTask.value) {
+        const taskRef = doc(db, "tasks", editingTask.value.id);
+        await updateDoc(taskRef, {
+          ...taskData,
+        });
+      } else {
+        await addDoc(collection(db, "tasks"), {
+          ...taskData,
+          status: "todo",
+          subjectId: selectedSubject.value.id,
+          userId: currentUser.value.uid,
+        });
+      }
 
-    closeTaskModal();
+      closeTaskModal();
+    } catch (error) {
+      console.error("Failed to save task:", error);
+    }
   };
 
   const editTask = (task) => {
@@ -149,5 +154,6 @@ export function useTasks(currentUser, selectedSubject) {
     formatDate,
     formatTime,
     moveTaskToStatus,
+    showTaskErrorModal,
   };
 }

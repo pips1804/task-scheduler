@@ -40,9 +40,9 @@ export function useSubjects(currentUser) {
       });
       subjects.value = result;
 
-      //   if (result.length > 0 && !selectedSubject.value) {
-      //     selectedSubject.value = result[0];
-      //   }
+      if (result.length > 0 && !selectedSubject.value) {
+        selectedSubject.value = result[0];
+      }
     });
   };
 
@@ -58,18 +58,6 @@ export function useSubjects(currentUser) {
     });
 
     console.log("Subject added with ID:", docRef.id);
-
-    subjects.value.push({
-      id: docRef.id,
-      name: subjectData.name,
-      userId: currentUser.value.uid,
-    });
-
-    selectedSubject.value = {
-      id: docRef.id,
-      name: subjectData.name,
-      userId: currentUser.value.uid,
-    };
 
     showSubjectModal.value = false;
 
