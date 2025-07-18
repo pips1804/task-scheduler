@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <div
+    <!-- <div
       class="flex items-start justify-between px-6 pt-6 pb-4 border-b border-gray-300 dark:border-gray-700"
     >
       <div class="flex flex-col">
@@ -44,7 +44,7 @@
           {{ currentUser.name }}
         </h2>
       </div>
-    </div>
+    </div> -->
 
     <!-- Mobile Header -->
     <div

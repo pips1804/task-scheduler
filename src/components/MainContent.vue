@@ -39,48 +39,91 @@
 
       <!-- Search Bar -->
       <div class="relative mb-6">
+        <button
+          v-if="searchQuery"
+          @click="clearSearch"
+          class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline mb-4 transition-all"
+        >
+          <ChevronDown class="rotate-90 w-4 h-4" />
+          Back to Kanban Board
+        </button>
+
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search tasks..."
-          class="w-full px-4 py-3 rounded-2xl border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/70 dark:bg-gray-800/70 text-gray-800 dark:text-white shadow-md"
+          placeholder="Search tasks by name..."
+          class="w-full px-5 py-3 rounded-full border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white shadow-lg transition mb-2"
         />
-
         <!-- Search Results Dropdown -->
         <div
           v-if="searchQuery && filteredTasks.length"
-          class="absolute top-full mt-2 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg z-50 max-h-[300px] overflow-auto"
+          class="absolute top-full mt-2 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl z-50 max-h-[320px] overflow-auto divide-y divide-gray-100 dark:divide-gray-800"
         >
           <div
             v-for="task in filteredTasks"
             :key="task.id"
-            class="flex justify-between items-center px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+            class="flex flex-col sm:flex-row sm:justify-between gap-2 items-start sm:items-center px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
           >
-            <div>
-              <p class="font-semibold text-gray-800 dark:text-white">
+            <!-- Task Info -->
+            <div class="space-y-1">
+              <p class="text-base font-medium text-gray-800 dark:text-white">
                 {{ task.name }}
               </p>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ getStatusName(task.status) }}
-              </p>
-              <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ task.date ? formatDate(task.date) : "N/A" }} -
-                {{ task.time ? formatTime(task.time) : "N/A" }}
+                {{ task.deadline ? formatDate(task.deadline) : "N/A" }} -
+                {{ task.deadline ? formatTime(task.deadline) : "N/A" }}
               </p>
             </div>
-            <div class="flex gap-2">
-              <button
-                @click="$emit('edit-task', task)"
-                class="text-blue-600 dark:text-blue-400 hover:underline text-sm"
-              >
-                Edit
-              </button>
-              <button
-                @click="$emit('delete-task', task.id)"
-                class="text-red-600 dark:text-red-400 hover:underline text-sm"
-              >
-                Delete
-              </button>
+
+            <!-- Controls -->
+            <div
+              class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-end w-full sm:w-auto"
+            >
+              <!-- Status Dropdown -->
+              <div class="relative w-full sm:w-40">
+                <select
+                  v-model="selectedStatus"
+                  @change="changeStatus(task)"
+                  class="appearance-none w-full text-sm px-3 py-2 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600 focus:outline-none transition"
+                >
+                  <option disabled value="">
+                    {{ getStatusName(task.status) }}
+                  </option>
+                  <option v-if="task.status !== 'todo'" value="todo">
+                    To Do
+                  </option>
+                  <option
+                    v-if="task.status !== 'inprogress'"
+                    value="inprogress"
+                  >
+                    In Progress
+                  </option>
+                  <option v-if="task.status !== 'completed'" value="completed">
+                    Completed
+                  </option>
+                </select>
+
+                <!-- Custom Chevron Icon -->
+                <ChevronDown
+                  class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none w-4 h-4 text-gray-500 dark:text-gray-300"
+                />
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex gap-2">
+                <button
+                  @click="$emit('edit-task', task)"
+                  class="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  Edit
+                </button>
+                <button
+                  @click="$emit('delete-task', task.id)"
+                  class="text-sm font-medium text-red-600 hover:underline dark:text-red-400"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -121,7 +164,9 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { Plus, Clipboard, BookOpen } from "lucide-vue-next";
+import { Plus, Clipboard, BookOpen, ChevronDown } from "lucide-vue-next";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 import KanbanColumn from "./KanbanColumn.vue";
 import Dashboard from "./Dashboard.vue";
 
@@ -159,7 +204,31 @@ const filteredTasks = computed(() => {
 // Utility to get status name from column ID
 const getStatusName = (statusId) => {
   if (!statusId) return "No Status";
-  const column = props.columns.find((col) => col.id === statusId);
-  return column ? column.name : "Unknown";
+
+  const column = props.columns.find(
+    (col) => String(col.id).trim() === String(statusId).trim()
+  );
+
+  console.log("  - matched column:", column);
+  return column ? column.title : "Unknown";
 };
+
+const selectedStatus = ref("");
+const changeStatus = async (task) => {
+  if (!task.newStatus || task.newStatus === task.status) return;
+
+  try {
+    await updateDoc(doc(db, "tasks", task.id), {
+      status: task.newStatus,
+    });
+    task.status = task.newStatus;
+    task.newStatus = ""; // Reset dropdown
+  } catch (error) {
+    console.error("Failed to change status:", error);
+  }
+};
+
+function clearSearch() {
+  searchQuery.value = "";
+}
 </script>

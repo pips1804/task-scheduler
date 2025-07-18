@@ -176,26 +176,34 @@ const showMobileSidebar = ref(false);
 const handleLogin = async (credentials) => {
   try {
     await authLogin(credentials);
-    showSuccess("Welcome back!", "You have successfully logged in.");
+    showSuccess("Welcome to StopCrammin'!", "You have successfully logged in.");
   } catch (error) {
     showError("Login Failed", error.message || "Invalid credentials.");
   }
 };
 
-const handleSignup = async (userData) => {
-  try {
-    await authSignup(userData);
-    showSuccess(
-      "Account Created!",
-      "Welcome to StopCrammin'. Start organizing your tasks!"
-    );
-  } catch (error) {
-    showError(
-      "Signup Failed",
-      error.message || "Unable to create account. Please try again."
-    );
-  }
-};
+// const handleSignup = async (userData) => {
+//   try {
+//     const { user, emailSent } = await authSignup(userData);
+
+//     if (emailSent) {
+//       showSuccess(
+//         "Account Created!",
+//         "Please check your email to verify your account before logging in."
+//       );
+//     } else {
+//       showSuccess(
+//         "Account Created!",
+//         "Welcome to StopCrammin'. Start organizing your tasks!"
+//       );
+//     }
+//   } catch (error) {
+//     showError(
+//       "Signup Failed",
+//       error.message || "Unable to create account. Please try again."
+//     );
+//   }
+// };
 
 const addSubject = (subjectData) => {
   addSubjectAction(subjectData);

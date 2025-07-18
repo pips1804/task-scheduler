@@ -119,6 +119,16 @@
             >
               Sign In
             </button>
+
+            <div v-if="showResendButton" class="mt-4 text-center">
+              <p class="text-sm text-red-500 mb-2">Email not verified.</p>
+              <button
+                @click="resendVerification"
+                class="text-sm text-blue-600 hover:underline"
+              >
+                Resend Verification Email
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -199,12 +209,48 @@
         </div>
       </div>
     </Teleport>
+
+    <Teleport to="body">
+      <div
+        v-if="showVerifyModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm"
+          @click="showVerifyModal = false"
+        ></div>
+        <div
+          class="relative bg-white dark:bg-gray-800 rounded-3xl p-8 w-full max-w-md shadow-2xl border border-gray-200 dark:border-gray-700"
+        >
+          <div class="text-center space-y-4">
+            <h3
+              class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+            >
+              Check your inbox!
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300">
+              A verification email has been sent. Please confirm your address
+              before logging in.
+            </p>
+            <button
+              @click="showVerifyModal = false"
+              class="mt-4 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from "vue";
 import { X, Sun, Moon, CheckSquare } from "lucide-vue-next";
+import { useAuth } from "../composables/useAuth"; // or your correct path
+
+const authComposable = useAuth();
 
 defineProps({
   isDarkMode: Boolean,
@@ -214,6 +260,9 @@ const emit = defineEmits(["login", "signup", "toggle-dark-mode"]);
 
 const showLoginModal = ref(false);
 const showSignupModal = ref(false);
+const showResendButton = ref(false);
+const showVerifyModal = ref(false);
+const emailForResend = ref("");
 
 const loginForm = reactive({
   email: "",
@@ -226,18 +275,55 @@ const signupForm = reactive({
   password: "",
 });
 
-const login = () => {
-  emit("login", { ...loginForm });
-  loginForm.email = "";
-  loginForm.password = "";
-  showLoginModal.value = false;
+const login = async () => {
+  try {
+    showResendButton.value = false;
+    emit("login", { ...loginForm });
+    loginForm.email = "";
+    loginForm.password = "";
+    showLoginModal.value = false;
+  } catch (err) {
+    if (err.message === "Email not verified") {
+      showResendButton.value = true;
+      emailForResend.value = loginForm.email;
+    } else {
+      alert("❌ " + err.message);
+    }
+  }
 };
 
-const signup = () => {
-  emit("signup", { ...signupForm });
+// ✅ Signup
+const signup = async () => {
+  try {
+    const { user, emailSent } = await authComposable.handleSignup(signupForm);
+
+    if (emailSent) {
+      await authComposable.logout(); // logout to prevent automatic login
+      showSignupModal.value = false;
+
+      // ✅ Now you can safely show the modal
+
+      showVerifyModal.value = true;
+    }
+  } catch (error) {
+    alert("❌ " + error.message);
+  }
+
   signupForm.name = "";
   signupForm.email = "";
   signupForm.password = "";
-  showSignupModal.value = false;
+};
+
+const resendVerification = async () => {
+  try {
+    const { auth } = await import("../firebase/firebase");
+    const user = auth.currentUser;
+    if (user) {
+      await authComposable.resendEmailVerification(user);
+      alert("✅ Verification email resent.");
+    }
+  } catch (err) {
+    alert("❌ " + err.message);
+  }
 };
 </script>
