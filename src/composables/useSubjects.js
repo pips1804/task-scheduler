@@ -40,9 +40,9 @@ export function useSubjects(currentUser) {
       });
       subjects.value = result;
 
-      if (result.length > 0 && !selectedSubject.value) {
-        selectedSubject.value = result[0];
-      }
+      //   if (result.length > 0 && !selectedSubject.value) {
+      //     selectedSubject.value = result[0];
+      //   }
     });
   };
 

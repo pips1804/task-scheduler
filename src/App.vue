@@ -75,6 +75,7 @@
 
       <!-- Confirmation Modal -->
       <ConfirmationModal
+        +
         :show="showConfirmModal"
         :title="confirmModal.title"
         :message="confirmModal.message"
@@ -122,7 +123,7 @@ const {
   logout: authLogout,
 } = useAuth();
 
-const { isDarkMode, toggleDarkMode } = useTheme();
+const { isDarkMode, toggleDarkMode } = useTheme(currentUser);
 
 const {
   subjects,
@@ -137,7 +138,7 @@ const {
   tasks,
   showTaskModal,
   editingTask,
-  saveTask,
+  saveTask: saveTaskAction,
   editTask,
   deleteTask: deleteTaskAction,
   closeTaskModal,
@@ -179,6 +180,23 @@ const handleLogin = async (credentials) => {
     showSuccess("Welcome to StopCrammin'!", "You have successfully logged in.");
   } catch (error) {
     showError("Login Failed", error.message || "Invalid credentials.");
+  }
+};
+
+const saveTask = async (taskData) => {
+  const isNew = !editingTask.value; // more reliable
+
+  try {
+    await saveTaskAction(taskData);
+
+    showSuccess(
+      isNew ? "Task Added" : "Task Updated",
+      isNew
+        ? `"${taskData.name}" has been added to your board.`
+        : `"${taskData.name}" has been updated.`
+    );
+  } catch (error) {
+    showError("Save Failed", error.message || "Could not save task.");
   }
 };
 

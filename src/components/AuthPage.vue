@@ -104,13 +104,25 @@
                   class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
                   >Password</label
                 >
-                <input
-                  v-model="loginForm.password"
-                  type="password"
-                  required
-                  class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your password"
-                />
+                <div class="relative">
+                  <input
+                    v-model="loginForm.password"
+                    :type="showPassword ? 'text' : 'password'"
+                    required
+                    class="w-full px-4 py-3 rounded-xl ..."
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    @click="showPassword = !showPassword"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-300"
+                  >
+                    <component
+                      :is="showPassword ? EyeOff : Eye"
+                      class="w-5 h-5"
+                    />
+                  </button>
+                </div>
               </div>
             </div>
             <button
@@ -190,20 +202,66 @@
                   class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
                   >Password</label
                 >
-                <input
-                  v-model="signupForm.password"
-                  type="password"
-                  required
-                  class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Enter your password"
-                />
+                <div class="relative">
+                  <input
+                    v-model="signupForm.password"
+                    :type="showSignupPassword ? 'text' : 'password'"
+                    required
+                    class="w-full px-4 py-3 rounded-xl ..."
+                    placeholder="Enter your password"
+                  />
+                  <button
+                    type="button"
+                    @click="showSignupPassword = !showSignupPassword"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-300"
+                  >
+                    <component
+                      :is="showSignupPassword ? EyeOff : Eye"
+                      class="w-5 h-5"
+                    />
+                  </button>
+                </div>
               </div>
             </div>
             <button
               type="submit"
-              class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+              class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center"
+              :disabled="isLoading"
             >
-              Create Account
+              <svg
+                v-if="isLoading"
+                class="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="url(#gradientSpinner)"
+                  d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z"
+                ></path>
+                <defs>
+                  <linearGradient
+                    id="gradientSpinner"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop offset="0%" stop-color="#3b82f6" />
+                    <stop offset="100%" stop-color="#8b5cf6" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span v-else>Create Account</span>
             </button>
           </form>
         </div>
@@ -247,7 +305,7 @@
 
 <script setup>
 import { ref, reactive } from "vue";
-import { X, Sun, Moon, CheckSquare } from "lucide-vue-next";
+import { X, Sun, Moon, CheckSquare, Eye, EyeOff } from "lucide-vue-next";
 import { useAuth } from "../composables/useAuth"; // or your correct path
 
 const authComposable = useAuth();
@@ -262,6 +320,9 @@ const showLoginModal = ref(false);
 const showSignupModal = ref(false);
 const showResendButton = ref(false);
 const showVerifyModal = ref(false);
+const isLoading = ref(false);
+const showPassword = ref(false);
+const showSignupPassword = ref(false);
 const emailForResend = ref("");
 
 const loginForm = reactive({
@@ -295,23 +356,22 @@ const login = async () => {
 // ✅ Signup
 const signup = async () => {
   try {
+    isLoading.value = true;
     const { user, emailSent } = await authComposable.handleSignup(signupForm);
 
     if (emailSent) {
-      await authComposable.logout(); // logout to prevent automatic login
+      await authComposable.logout();
       showSignupModal.value = false;
-
-      // ✅ Now you can safely show the modal
-
       showVerifyModal.value = true;
     }
   } catch (error) {
     alert("❌ " + error.message);
+  } finally {
+    isLoading.value = false;
+    signupForm.name = "";
+    signupForm.email = "";
+    signupForm.password = "";
   }
-
-  signupForm.name = "";
-  signupForm.email = "";
-  signupForm.password = "";
 };
 
 const resendVerification = async () => {
