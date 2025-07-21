@@ -82,25 +82,13 @@
               <!-- Status Dropdown -->
               <div class="relative w-full sm:w-40">
                 <select
-                  v-model="selectedStatus"
+                  v-model="task.status"
                   @change="changeStatus(task)"
                   class="appearance-none w-full text-sm px-3 py-2 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600 focus:outline-none transition"
                 >
-                  <option disabled value="">
-                    {{ getStatusName(task.status) }}
-                  </option>
-                  <option v-if="task.status !== 'todo'" value="todo">
-                    To Do
-                  </option>
-                  <option
-                    v-if="task.status !== 'inprogress'"
-                    value="inprogress"
-                  >
-                    In Progress
-                  </option>
-                  <option v-if="task.status !== 'completed'" value="completed">
-                    Completed
-                  </option>
+                  <option value="todo">To Do</option>
+                  <option value="inprogress">In Progress</option>
+                  <option value="completed">Completed</option>
                 </select>
 
                 <!-- Custom Chevron Icon -->
@@ -221,14 +209,10 @@ const getStatusName = (statusId) => {
 
 const selectedStatus = ref("");
 const changeStatus = async (task) => {
-  if (!task.newStatus || task.newStatus === task.status) return;
-
   try {
     await updateDoc(doc(db, "tasks", task.id), {
-      status: task.newStatus,
+      status: task.status,
     });
-    task.status = task.newStatus;
-    task.newStatus = ""; // Reset dropdown
   } catch (error) {
     console.error("Failed to change status:", error);
   }

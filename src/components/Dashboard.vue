@@ -69,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useAuth } from "../composables/useAuth";
 import { useSubjects } from "../composables/useSubjects";
 import { useTasks } from "../composables/useTasks";
@@ -77,7 +77,19 @@ import StatCard from "./StatCard.vue";
 
 const { currentUser } = useAuth();
 const { subjects } = useSubjects(currentUser);
-const { tasks, getTasksByStatus, isTaskOverdue } = useTasks(currentUser, null);
+
+const selectedSubject = ref(null);
+
+watch(subjects, (newSubjects) => {
+  if (!selectedSubject.value && newSubjects.length > 0) {
+    selectedSubject.value = newSubjects[0];
+  }
+});
+
+const { tasks, getTasksByStatus, isTaskOverdue } = useTasks(
+  currentUser,
+  selectedSubject
+);
 
 const overdueTasks = computed(
   () => tasks.value?.filter((t) => isTaskOverdue(t)) || []

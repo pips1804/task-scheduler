@@ -20,7 +20,7 @@ export function useTasks(currentUser, selectedSubject) {
   const showTaskErrorModal = ref(false);
 
   const loadTasks = async () => {
-    if (!currentUser.value || !selectedSubject.value) return;
+    if (!currentUser.value) return;
 
     const taskQuery = query(
       collection(db, "tasks"),
@@ -83,9 +83,8 @@ export function useTasks(currentUser, selectedSubject) {
   };
 
   const getTasksByStatus = (status) => {
-    return tasks.value.filter(
-      (t) => t.status === status && t.subjectId === selectedSubject.value?.id
-    );
+    if (!selectedSubject?.value) return [];
+    return tasks.value.filter((t) => t.status === status);
   };
 
   const isTaskOverdue = (task) => {
