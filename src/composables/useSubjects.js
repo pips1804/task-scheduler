@@ -54,16 +54,22 @@ export function useSubjects(currentUser) {
 
     const docRef = await addDoc(collection(db, "subjects"), {
       name: subjectData.name,
-      userId: currentUser.value.uid, // ✅ fixed
+      userId: currentUser.value.uid,
     });
 
     console.log("Subject added with ID:", docRef.id);
 
+    // Optimistically set selectedSubject
+    selectedSubject.value = {
+      id: docRef.id,
+      name: subjectData.name,
+      userId: currentUser.value.uid,
+    };
+
     showSubjectModal.value = false;
 
-    setTimeout(() => {
-      loadUserSubjects();
-    }, 500);
+    // Reload subjects to sync properly with Firestore snapshot
+    loadUserSubjects();
   };
 
   const deleteSubject = async (subjectId) => {

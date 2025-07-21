@@ -20,40 +20,21 @@ export function useTasks(currentUser, selectedSubject) {
   const showTaskErrorModal = ref(false);
 
   const loadTasks = async () => {
-    if (!currentUser.value) return;
+    if (!currentUser.value || !selectedSubject.value) return;
 
-    // Get all subject IDs of the current user
-    const subjectQuery = query(
-      collection(db, "subjects"),
-      where("userId", "==", currentUser.value.uid)
-    );
-    const subjectSnapshot = await getDocs(subjectQuery);
-    const validSubjectIds = subjectSnapshot.docs.map((doc) => doc.id);
-
-    // Query all tasks of the current user
     const taskQuery = query(
       collection(db, "tasks"),
       where("userId", "==", currentUser.value.uid)
     );
 
-    if (unsubscribeRef.value) unsubscribeRef.value(); // Unsubscribe old listener
+    if (unsubscribeRef.value) unsubscribeRef.value();
 
     unsubscribeRef.value = onSnapshot(taskQuery, (snapshot) => {
       const result = [];
-
-      snapshot.forEach(async (docSnap) => {
+      snapshot.forEach((docSnap) => {
         const task = { id: docSnap.id, ...docSnap.data() };
-
-        // If the task's subject no longer exists, delete it
-        if (!validSubjectIds.includes(task.subjectId)) {
-          await deleteDoc(doc(db, "tasks", task.id));
-        } else {
-          // Otherwise keep it
-          result.push(task);
-        }
+        result.push(task);
       });
-
-      // Filtered valid tasks
       tasks.value = result;
     });
   };
@@ -97,11 +78,14 @@ export function useTasks(currentUser, selectedSubject) {
   };
 
   const getTaskCount = (subjectId) => {
+    if (!subjectId) return 0;
     return tasks.value.filter((t) => t.subjectId === subjectId).length;
   };
 
   const getTasksByStatus = (status) => {
-    return tasks.value.filter((t) => t.status === status);
+    return tasks.value.filter(
+      (t) => t.status === status && t.subjectId === selectedSubject.value?.id
+    );
   };
 
   const isTaskOverdue = (task) => {

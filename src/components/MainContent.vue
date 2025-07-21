@@ -143,7 +143,13 @@
           v-for="column in props.columns"
           :key="column.id"
           :column="column"
-          :tasks="props.getTasksByStatus(column.id)"
+          :tasks="
+            props.tasks.filter(
+              (task) =>
+                task.status === column.id &&
+                task.subjectId === props.selectedSubject?.id
+            )
+          "
           @drop="(event) => $emit('drop', event, column.id)"
           @drag-start="(event, task) => $emit('drag-start', event, task)"
           @edit-task="(task) => $emit('edit-task', task)"
