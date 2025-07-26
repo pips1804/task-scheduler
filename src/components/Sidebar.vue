@@ -35,7 +35,7 @@
           class="p-2.5 rounded-xl hover:bg-gray-200/60 dark:hover:bg-gray-800 transition ml-1"
         >
           <img
-            :src="currentUser?.photoURL || defaultProfileImage"
+            :src="currentUser?.photoURL || defaultPicture"
             alt="Profile"
             class="w-7 h-7 rounded-full object-cover"
           />
@@ -171,6 +171,7 @@ import { Plus, Sun, Moon, LogOut, X, Trash2, BookOpen } from "lucide-vue-next";
 import { useAuth } from "../composables/useAuth"; // adjust path if needed
 
 const { currentUser } = useAuth();
+const defaultPicture = "../../public/img/profile.jpg";
 
 defineProps({
   show: Boolean,
