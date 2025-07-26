@@ -7,18 +7,21 @@
       class="w-full flex justify-center items-center gap-2 sm:gap-3 py-4 sm:py-6 border-b border-gray-300 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm shadow-sm"
     >
       <component
-        :is="props.selectedSubject ? BookOpen : Clipboard"
+        :is="getIconComponent"
         class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400"
       />
       <h1
         class="text-xl sm:text-3xl font-extrabold text-gray-800 dark:text-white tracking-tight"
       >
-        {{ props.selectedSubject ? props.selectedSubject.name : "Dashboard" }}
+        {{ getHeaderTitle }}
       </h1>
     </div>
 
     <!-- Main content area -->
-    <div v-if="props.selectedSubject" class="flex-1 p-6">
+    <div
+      v-if="props.activeView === 'subject' && props.selectedSubject"
+      class="flex-1 p-6"
+    >
       <!-- Subheader and button -->
       <div
         class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 space-y-4 sm:space-y-0"
@@ -150,6 +153,14 @@
     </div>
 
     <!-- Empty State -->
+    <div
+      v-else-if="props.activeView === 'notes'"
+      class="flex-1 px-4 sm:px-6 py-8"
+    >
+      <Notes />
+    </div>
+
+    <!-- Empty State -->
     <div v-else class="flex-1 flex items-center justify-center p-6">
       <Dashboard />
     </div>
@@ -163,6 +174,20 @@ import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import KanbanColumn from "./KanbanColumn.vue";
 import Dashboard from "./Dashboard.vue";
+import Notes from "./Notes.vue";
+
+const getHeaderTitle = computed(() => {
+  if (props.activeView === "notes") return "My Notes";
+  if (props.activeView === "subject" && props.selectedSubject)
+    return props.selectedSubject.name;
+  return "Dashboard";
+});
+
+const getIconComponent = computed(() => {
+  if (props.activeView === "notes") return BookOpen;
+  if (props.activeView === "subject") return BookOpen;
+  return Clipboard;
+});
 
 // Define props with access to values
 const props = defineProps({
@@ -173,6 +198,8 @@ const props = defineProps({
   isTaskOverdue: Function,
   formatDate: Function,
   formatTime: Function,
+  activeView: String,
+  selectedSubject: Object,
 });
 
 // Emits

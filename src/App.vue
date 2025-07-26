@@ -39,10 +39,11 @@
           @close="showMobileSidebar = false"
           @toggle-dark-mode="toggleDarkMode"
           @logout="logout"
-          @select-subject="selectSubject"
           @add-subject="showSubjectModal = true"
           @delete-subject="confirmDeleteSubject"
-          @select-dashboard="selectedSubject = null"
+          @select-subject="selectsSubject"
+          @select-dashboard="selectsDashboard"
+          @select-note="selectsNotes"
           :getTaskCount="getTaskCount"
           @open-profile="showProfile = true"
           :currentUser="currentUser"
@@ -53,6 +54,7 @@
           :selectedSubject="selectedSubject"
           :tasks="tasks"
           :columns="columns"
+          :activeView="activeView"
           @add-task="showTaskModal = true"
           @edit-task="editTask"
           @delete-task="confirmDeleteTask"
@@ -168,6 +170,7 @@ import { useSubjects } from "./composables/useSubjects";
 import { useTasks } from "./composables/useTasks";
 import { useTheme } from "./composables/useTheme";
 import { useKanban } from "./composables/useKanban";
+import { useActiveView } from "./composables/useActiveView";
 import { useNotifications } from "./composables/useNotifications";
 import { getDoc, doc } from "firebase/firestore";
 import { auth, db } from "./firebase/firebase";
@@ -251,6 +254,24 @@ const confirmModal = ref({
   type: "danger",
   action: null,
 });
+
+const { activeView } = useActiveView(); // 'dashboard', 'subject', 'notes'
+
+// When selecting a subject
+function selectsSubject(subject) {
+  selectedSubject.value = subject;
+  activeView.value = "subject";
+}
+
+function selectsDashboard() {
+  selectedSubject.value = null;
+  activeView.value = "dashboard";
+}
+
+function selectsNotes() {
+  selectedSubject.value = null;
+  activeView.value = "notes";
+}
 
 // UI state
 const showMobileSidebar = ref(false);

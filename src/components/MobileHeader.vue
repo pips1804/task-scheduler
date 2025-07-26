@@ -46,7 +46,7 @@ import { Menu, Sun, Moon, LogOut } from "lucide-vue-next";
 import { useAuth } from "../composables/useAuth"; // adjust path if needed
 
 const { currentUser } = useAuth();
-const defaultPicture = "../../public/img/profile.jpg";
+const defaultPicture = "/img/profile.jpg";
 
 defineProps({
   isDarkMode: Boolean,

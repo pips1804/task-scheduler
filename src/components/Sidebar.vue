@@ -80,7 +80,7 @@
         <div
           class="mt-3 group p-4 rounded-2xl border cursor-pointer transition-all duration-300 hover:shadow-md"
           :class="[
-            selectedSubject === null
+            activeView === 'dashboard'
               ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-700 shadow'
               : 'bg-white/60 dark:bg-gray-800/60 border-gray-200/40 dark:border-gray-700/40 hover:bg-white/80 dark:hover:bg-gray-800/80',
           ]"
@@ -92,6 +92,25 @@
             ></div>
             <span class="font-medium text-gray-800 dark:text-gray-100">
               Dashboard
+            </span>
+          </div>
+        </div>
+
+        <div
+          class="mt-3 group p-4 rounded-2xl border cursor-pointer transition-all duration-300 hover:shadow-md"
+          :class="[
+            activeView === 'notes'
+              ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-700 shadow'
+              : 'bg-white/60 dark:bg-gray-800/60 border-gray-200/40 dark:border-gray-700/40 hover:bg-white/80 dark:hover:bg-gray-800/80',
+          ]"
+          @click="$emit('select-note')"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-3 h-3 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 shadow-sm"
+            ></div>
+            <span class="font-medium text-gray-800 dark:text-gray-100">
+              Notes
             </span>
           </div>
         </div>
@@ -168,10 +187,12 @@
 
 <script setup>
 import { Plus, Sun, Moon, LogOut, X, Trash2, BookOpen } from "lucide-vue-next";
-import { useAuth } from "../composables/useAuth"; // adjust path if needed
+import { useAuth } from "../composables/useAuth";
+import { useActiveView } from "../composables/useActiveView";
 
 const { currentUser } = useAuth();
-const defaultPicture = "../../public/img/profile.jpg";
+const defaultPicture = "/img/profile.jpg";
+const { activeView } = useActiveView();
 
 defineProps({
   show: Boolean,
@@ -189,5 +210,7 @@ defineEmits([
   "add-subject",
   "delete-subject",
   "open-profile",
+  "select-note",
+  "select-dashboard",
 ]);
 </script>
