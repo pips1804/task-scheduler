@@ -9,7 +9,7 @@
         <span
           class="font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
         >
-          {{ currentUser?.name || "User" }}!
+          {{ currentUser?.displayName || "User" }}!
         </span>
       </h1>
       <p class="text-sm text-gray-500 dark:text-gray-400">

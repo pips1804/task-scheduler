@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'lg:w-80 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 flex flex-col sidebar transition-all duration-300',
+      'lg:w-85 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 flex flex-col sidebar transition-all duration-300',
       show ? 'fixed inset-0 z-50 lg:relative' : 'hidden lg:flex',
     ]"
   >
@@ -14,7 +14,7 @@
       >
         StopCrammin'
       </h1>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 ml-4">
         <button
           @click="$emit('toggle-dark-mode')"
           class="p-2.5 rounded-xl hover:bg-gray-200/60 dark:hover:bg-gray-800 transition"
@@ -22,11 +22,23 @@
           <Sun v-if="isDarkMode" class="w-5 h-5" />
           <Moon v-else class="w-5 h-5" />
         </button>
+
         <button
           @click="$emit('logout')"
           class="p-2.5 rounded-xl hover:bg-gray-200/60 dark:hover:bg-gray-800 transition"
         >
           <LogOut class="w-5 h-5" />
+        </button>
+
+        <button
+          @click="$emit('open-profile')"
+          class="p-2.5 rounded-xl hover:bg-gray-200/60 dark:hover:bg-gray-800 transition ml-1"
+        >
+          <img
+            :src="currentUser?.photoURL || defaultProfileImage"
+            alt="Profile"
+            class="w-7 h-7 rounded-full object-cover"
+          />
         </button>
       </div>
     </div>
@@ -175,5 +187,6 @@ defineEmits([
   "select-subject",
   "add-subject",
   "delete-subject",
+  "open-profile",
 ]);
 </script>

@@ -8,7 +8,7 @@
     >
       <!-- Authentication Page -->
       <AuthPage
-        v-if="!isAuthenticated"
+        v-if="!loadingAuthState && !isAuthenticated"
         :isDarkMode="isDarkMode"
         @login="handleLogin"
         @signup="handleSignup"
@@ -16,7 +16,10 @@
       />
 
       <!-- Main App -->
-      <div v-else class="flex flex-col lg:flex-row min-h-screen">
+      <div
+        v-else-if="!loadingAuthState"
+        class="flex flex-col lg:flex-row min-h-screen app-wrapper"
+      >
         <!-- Mobile Header -->
         <MobileHeader
           :isDarkMode="isDarkMode"
@@ -39,6 +42,8 @@
           @delete-subject="confirmDeleteSubject"
           @select-dashboard="selectedSubject = null"
           :getTaskCount="getTaskCount"
+          @open-profile="showProfile = true"
+          :currentUser="currentUser"
         />
 
         <!-- Main Content -->
@@ -59,6 +64,47 @@
         />
       </div>
 
+      <!-- Spinner -->
+      <div
+        v-if="loadingAuthState"
+        class="flex flex-col items-center justify-center min-h-screen space-y-4"
+      >
+        <svg
+          class="animate-spin h-10 w-10"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <linearGradient id="gradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2563EB" />
+              <!-- blue-600 -->
+              <stop offset="100%" stop-color="#9333EA" />
+              <!-- purple-600 -->
+            </linearGradient>
+          </defs>
+          <circle
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="url(#gradient)"
+            stroke-opacity="0.25"
+            stroke-width="4"
+          />
+          <path
+            fill="url(#gradient)"
+            fill-opacity="0.75"
+            d="M4 12a8 8 0 018-8v8H4z"
+          />
+        </svg>
+
+        <h1
+          class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+        >
+          Reloading page...
+        </h1>
+      </div>
+
       <!-- Modern Modals -->
       <SubjectModal
         :show="showSubjectModal"
@@ -71,6 +117,13 @@
         :editingTask="editingTask"
         @close="closeTaskModal"
         @submit="saveTask"
+      />
+
+      <ProfileModal
+        v-if="showProfile"
+        :show="showProfile"
+        @close="showProfile = false"
+        @updated="handleProfileUpdated"
       />
 
       <!-- Confirmation Modal -->
@@ -107,12 +160,37 @@ import SubjectModal from "./components/SubjectModal.vue";
 import TaskModal from "./components/TaskModal.vue";
 import ConfirmationModal from "./components/ConfirmationModal.vue";
 import NotificationToast from "./components/NotificationToast.vue";
+import ProfileModal from "./components/ProfileModal.vue";
 import { useAuth } from "./composables/useAuth";
 import { useSubjects } from "./composables/useSubjects";
 import { useTasks } from "./composables/useTasks";
 import { useTheme } from "./composables/useTheme";
 import { useKanban } from "./composables/useKanban";
 import { useNotifications } from "./composables/useNotifications";
+import { getDoc, doc } from "firebase/firestore";
+import { auth, db } from "./firebase/firebase";
+
+const refreshUser = async () => {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const userDoc = await getDoc(doc(db, "users", user.uid));
+  const userData = userDoc.exists() ? userDoc.data() : {};
+
+  currentUser.value = {
+    uid: user.uid,
+    displayName: userData.displayName || user.displayName || "User",
+    email: user.email,
+    photoURL: userData.profileImage || "", // Base64
+  };
+};
+
+const showProfile = ref(false);
+
+const handleProfileUpdated = async () => {
+  await refreshUser(); // ✅ Refresh user immediately
+  showSuccess("Profile Updated", "Your profile info has been updated.");
+};
 
 // Composables
 const {
@@ -121,6 +199,7 @@ const {
   handleLogin: authLogin,
   handleSignup: authSignup,
   logout: authLogout,
+  loadingAuthState,
 } = useAuth();
 
 const { isDarkMode, toggleDarkMode } = useTheme(currentUser);
@@ -132,6 +211,7 @@ const {
   addSubject: addSubjectAction,
   selectSubject,
   deleteSubject: deleteSubjectAction,
+  loadUserSubjects,
 } = useSubjects(currentUser);
 
 const {
