@@ -27,16 +27,29 @@
       >
         <LogOut class="w-5 h-5" />
       </button>
+      <button
+        @click="$emit('open-profile')"
+        class="p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+      >
+        <img
+          :src="currentUser?.photoURL"
+          alt="Profile"
+          class="w-7 h-7 rounded-full object-cover"
+        />
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
 import { Menu, Sun, Moon, LogOut } from "lucide-vue-next";
+import { useAuth } from "../composables/useAuth"; // adjust path if needed
+
+const { currentUser } = useAuth();
 
 defineProps({
   isDarkMode: Boolean,
 });
 
-defineEmits(["toggle-sidebar", "toggle-dark-mode", "logout"]);
+defineEmits(["toggle-sidebar", "toggle-dark-mode", "logout", "open-profile"]);
 </script>

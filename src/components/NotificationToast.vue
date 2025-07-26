@@ -8,7 +8,10 @@
       leave-from-class="opacity-100 translate-x-0"
       leave-to-class="opacity-0 translate-x-full"
     >
-      <div v-if="show" class="fixed top-4 right-4 z-50 max-w-sm w-full">
+      <div
+        v-if="show"
+        class="fixed top-4 right-4 left-4 sm:left-auto sm:right-4 z-50 w-auto max-w-sm mx-auto sm:mx-0"
+      >
         <div
           :class="toastClass"
           class="rounded-2xl p-4 shadow-2xl border backdrop-blur-sm"

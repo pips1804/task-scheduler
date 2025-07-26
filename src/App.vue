@@ -26,6 +26,8 @@
           @toggle-sidebar="showMobileSidebar = !showMobileSidebar"
           @toggle-dark-mode="toggleDarkMode"
           @logout="logout"
+          @open-profile="showProfile = true"
+          :currentUser="currentUser"
         />
 
         <!-- Sidebar -->
